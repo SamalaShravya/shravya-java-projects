@@ -1,0 +1,89 @@
+develop a jdbc application for both select insert update delete(ddl and dll)
+
+import java.sql.*;
+
+public class JDBCExample {
+
+    // JDBC URL, username, and password of MySQL server
+    private static final String URL = "jdbc:mysql://localhost:3306/mydatabase";
+    private static final String USER = "username";
+    private static final String PASSWORD = "password";
+
+    // JDBC variables for opening, closing and managing connection
+    private static Connection connection;
+    private static Statement statement;
+    private static ResultSet resultSet;
+
+    public static void main(String[] args) {
+        try {
+            // Connect to the database
+            connection = DriverManager.getConnection(URL, USER, PASSWORD);
+
+            // Perform CRUD operations
+            insertData("John", 30);
+            selectData();
+            updateData(1, "Jane", 25);
+            selectData();
+            deleteData(1);
+            selectData();
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        } finally {
+            // Close resources
+            try {
+                if (resultSet != null) resultSet.close();
+                if (statement != null) statement.close();
+                if (connection != null) connection.close();
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    // Method to insert data into the database
+    private static void insertData(String name, int age) throws SQLException {
+        String query = "INSERT INTO users (name, age) VALUES (?, ?)";
+        PreparedStatement preparedStatement = connection.prepareStatement(query);
+        preparedStatement.setString(1, name);
+        preparedStatement.setInt(2, age);
+        preparedStatement.executeUpdate();
+        System.out.println("Data inserted successfully.");
+        preparedStatement.close();
+    }
+
+    // Method to select and display data from the database
+    private static void selectData() throws SQLException {
+        statement = connection.createStatement();
+        resultSet = statement.executeQuery("SELECT * FROM users");
+
+        while (resultSet.next()) {
+            System.out.println("ID: " + resultSet.getInt("id") +
+                    ", Name: " + resultSet.getString("name") +
+                    ", Age: " + resultSet.getInt("age"));
+        }
+        resultSet.close();
+    }
+
+    // Method to update data in the database
+    private static void updateData(int id, String name, int age) throws SQLException {
+        String query = "UPDATE users SET name=?, age=? WHERE id=?";
+        PreparedStatement preparedStatement = connection.prepareStatement(query);
+        preparedStatement.setString(1, name);
+        preparedStatement.setInt(2, age);
+        preparedStatement.setInt(3, id);
+        preparedStatement.executeUpdate();
+        System.out.println("Data updated successfully.");
+        preparedStatement.close();
+    }
+
+    // Method to delete data from the database
+    private static void deleteData(int id) throws SQLException {
+        String query = "DELETE FROM users WHERE id=?";
+        PreparedStatement preparedStatement = connection.prepareStatement(query);
+        preparedStatement.setInt(1, id);
+        preparedStatement.executeUpdate();
+        System.out.println("Data deleted successfully.");
+        preparedStatement.close();
+    }
+}
